@@ -1,5 +1,5 @@
 const grpc = require('@grpc/grpc-js');
-const { portConnector } = require("./portConnector.js");
+const { RFIDConnector } = require("./RFIDConnector.js");
 const protoLoader = require('@grpc/proto-loader');
 var PROTO_PATH = `${__dirname}/rfid.proto`;
 
@@ -17,13 +17,17 @@ var packageDefinition = protoLoader.loadSync(
 // Package name is appended here
 const rfidProto = grpc.loadPackageDefinition(packageDefinition).rfidgrpc;
 
+const conn = new RFIDConnector();
+
 // Implement method
 // Not camelCased here
 function readRFID(call, callback) {
   callback(null, {
-    tag: "value"
+    tag: conn.getAllKeys()
+    //tag: conn.getJSONFile(call.request.key)
   });
 }
+
 
 function main() {
     var server = new grpc.Server();
@@ -42,17 +46,14 @@ function main() {
  }
 main();
 
-
-const conn = new portConnector();
-
-
+/*
 // Implement the readRFID method
 async function readRFID(call, callback) {
-  await parser.once('data', (data) => {
+  await RFIDConnector.parser.once('data', (data) => {
     callback(null, { tag: conn.getJSONFile(call.request.key) });
   });
 }
-
+*/
 
 
 

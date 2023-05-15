@@ -6,7 +6,8 @@ service RFIDService {
   rpc ReadRFID (RFIDRequest) returns (RFIDResponse) {}
 }
 
-message RFIDRequest {}
+message RFIDRequest {
+}
 
 message RFIDResponse {
   string tag = 1;
