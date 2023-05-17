@@ -2,8 +2,8 @@
     "slaveId": 1,
     "port":"COM4",
     "baudRate":9600,
-    "holding_reg_address":1,
-    "input_reg_address":0,
+    "holding_reg_address":0,
+    "input_reg_address":1,
     "value": 5,
     "count": 5
 }

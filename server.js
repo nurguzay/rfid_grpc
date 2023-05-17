@@ -21,14 +21,18 @@ const rfidProto = grpc.loadPackageDefinition(packageDefinition).rfidgrpc;
 const conn = new ModbusConnector(port, baudRate);
 conn.connect();
 
+
 // Implement method
 // Not camelCased here
 async function readRFID(call, callback) {
-  callback(null, {
-    tag: await conn.readInputRegisters(call.request.input_address, call.request.count)
-    //tag: "value"
-
-  });
+  try {
+    // Assuming you have a modbus connection object named `conn`
+    //const tag = await conn.readInputRegisters(call.request.input_address, call.request.count);
+    const tag = "value"
+    callback(null, { tag });
+  } catch (error) {
+    callback(error);
+  }
 }
 
 
@@ -45,19 +49,6 @@ function main() {
     );
  }
 main();
-
-
-/*
-// Implement the readRFID method
-async function readRFID(call, callback) {
-  await RFIDConnector.parser.once('data', (data) => {
-    callback(null, { tag: conn.getJSONFile(call.request.key) });
-  });
-}
-*/
-
-
-
 
 /*
 We load the protobuf file and create a gRPC server. We then implement the readRFID method, 

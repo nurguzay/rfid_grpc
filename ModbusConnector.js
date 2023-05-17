@@ -71,4 +71,5 @@ class ModbusConnector {
     });
   }
 }
+
 exports.ModbusConnector = ModbusConnector;
