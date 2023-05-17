@@ -1,6 +1,8 @@
 const grpc = require('@grpc/grpc-js');
 const protoLoader = require('@grpc/proto-loader');
 var PROTO_PATH = `${__dirname}/rfid.proto`;
+const config = require("./config.json");
+
 
 var packageDefinition = protoLoader.loadSync(
     PROTO_PATH,
@@ -16,12 +18,16 @@ var packageDefinition = protoLoader.loadSync(
 // Package name is appended here
 const rfidProto = grpc.loadPackageDefinition(packageDefinition).rfidgrpc;
 
+
 // Create the gRPC client
 const client = new rfidProto.RFIDService('localhost:5000', grpc.credentials.createInsecure());
 
+const count = config.count;
+const input_address = config.input_reg_address;
+
 // Call the ReadRFID method
 //call fonksiyonunun key parametresi keyParam olarak tanımlandı
-client.ReadRFID({}, function(err, data) {
+client.ReadRFID({input_address: input_address, count: count}, function(err, data) {
     if (err) {
       console.error("HATA--- ", err);
     } else {

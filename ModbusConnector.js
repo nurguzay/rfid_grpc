@@ -1,130 +1,74 @@
 const ModbusRTU = require('modbus-serial');
-const client = new ModbusRTU();
-
-/*
-client.connectRTU("/dev/ttyUSB0", { baudRate: 9600 }, () => {
-    // Write the value 123 to holding register 1
-    client.writeRegister(1, 123, (err) => {
-      if (err) {
-        console.log('Error writing to modbus device:', err);
-      } else {
-        console.log('Successfully wrote value to modbus device');
-      }
-      // Close the connection to the modbus device
-      client.close();
-    });
-  });
-*/
+//const config = require("./config.json");
 
 class ModbusConnector {
+  constructor(port, baudRate) {
+    this.client = new ModbusRTU();
+    this.port = port;
+    this.baudRate = baudRate;
+    this.connected = false;
+  }
 
-    #ModbusClient;
-    isConnected = false;
-
-     /** Represents a port connection
-     * @constructor
-     * @returns Returns the instance.
-     */
-
-     
-    constructor() {
-
-        const port = "COM4";
-        const baudRate = 9600;
-        const address = 1;
-        const slaveId = 1;
-        // set the parameters of the modbus client
-        client.connectRTUBuffered(port, { baudRate })
-            .then(() => {
-                console.log('Modbus client connected');
-                // Configure the slave ID
-                client.setID(slaveId);
-                
-            })
-            .catch((err) => {
-                console.error('Modbus client connection error:', err);
-            });
-        
-        /*
-        // Open the serial port
-        client.open(function (err) {
-            if (err) {
-                console.log(err);
-            } else {
-                // Write data to the device
-                client.writeCoil(address, true, function (err, data) {
-                    if (err) {
-                        console.log("Error writing to modbus device:", err);
-                    } else {
-                        console.log("Data written to modbus device:", data);
-                    }
-  
-                    // Close the serial port
-                    client.close(function () {});
-                });
-            }
+  connect() {
+    return new Promise((resolve, reject) => {
+      this.client.connectRTUBuffered(this.port, { baudRate: this.baudRate })
+        .then(() => {
+          this.connected = true;
+          resolve();
+          console.log("Modbus connected...");
+        })
+        .catch((err) => {
+          this.connected = false;
+          reject(err);
         });
-        */
-    }
-
-
-    async setData() {
-        client.writeRegister(1, 123, (err) => {
-            if (err) {
-              console.log('Error writing to modbus device:', err);
-            } else {
-              console.log('Successfully wrote value to modbus device');
-            }
-            // Close the connection to the modbus device
-            client.close();
-          });
-    }
-
-
-    async getData() {
-        await client.readHoldingRegisters(0, 10, (err, data) => {
-            if (err) {
-                console.error(err);
-                return;
-            }
-            return data;
-        });
-    }
-
-}
-
-
-
-
-
-
-
-
-
-
-
-
-/*
-// set the parameters of the modbus client
-client.connectRTUBuffered('COM4', { baudRate: 9600 })
-    .then(() => {
-        console.log('Modbus client connected');
-
-        
-        // read 10 registers starting from address 0
-        client.readHoldingRegisters(0, 10, (err, data) => {
-            if (err) {
-                console.error(err);
-                return;
-            }
-            console.log(data);
-        });
-        
-    })
-    .catch((err) => {
-        console.error('Modbus client connection error:', err);
     });
+  }
 
-*/
+  disconnect() {
+    return new Promise((resolve, reject) => {
+      this.client.close((err) => {
+        if (err) {
+          reject(err);
+        } else {
+          this.connected = false;
+          resolve();
+        }
+      });
+    });
+  }
 
+  readInputRegisters(input_address, count) {
+    return new Promise((resolve, reject) => {
+      if (!this.connected) {
+        reject(new Error('Modbus connection not established'));
+        return;
+      }
+
+      this.client.readHoldingRegisters(input_address, count)
+        .then((data) => {
+          resolve(data.data);
+        })
+        .catch((err) => {
+          reject(err);
+        });
+    });
+  }
+
+  writeSingleRegister(holding_address, value) {
+    return new Promise((resolve, reject) => {
+      if (!this.connected) {
+        reject(new Error('Modbus connection not established'));
+        return;
+      }
+
+      this.client.writeSingleRegister(holding_address, value)
+        .then(() => {
+          resolve();
+        })
+        .catch((err) => {
+          reject(err);
+        });
+    });
+  }
+}
 exports.ModbusConnector = ModbusConnector;

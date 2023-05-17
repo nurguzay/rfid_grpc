@@ -1,12 +1,14 @@
 const grpc = require('@grpc/grpc-js');
-const { RFIDConnector } = require("./RFIDConnector.js");
 const protoLoader = require('@grpc/proto-loader');
 var PROTO_PATH = `${__dirname}/rfid.proto`;
-const {ModbusConnector} = require("./ModbusConnector");
+const {ModbusConnector} = require("./ModbusConnector.js");
+const config = require("./config.json")
+const port = config.port;
+const baudRate = config.baudRate;
+
 var packageDefinition = protoLoader.loadSync(
     PROTO_PATH,
     {
-      // Perhaps this should be false?
       keepCase: true,
       longs: String,
       enums: String,
@@ -16,24 +18,22 @@ var packageDefinition = protoLoader.loadSync(
 
 // Package name is appended here
 const rfidProto = grpc.loadPackageDefinition(packageDefinition).rfidgrpc;
+const conn = new ModbusConnector(port, baudRate);
+conn.connect();
 
-const conn = new ModbusConnector();
-//console.log(conn.setData);
 // Implement method
 // Not camelCased here
 async function readRFID(call, callback) {
   callback(null, {
+    tag: await conn.readInputRegisters(call.request.input_address, call.request.count)
     //tag: "value"
-    tag: await conn.getData()
+
   });
 }
 
 
 function main() {
     var server = new grpc.Server();
-
-    // By the documentation that this should be readRFID:readRFID
-    // But, when testing, I needed to reflect the Proto's Method Name
     server.addService(rfidProto.RFIDService.service, { ReadRFID: readRFID });
 
     server.bindAsync(
@@ -45,6 +45,7 @@ function main() {
     );
  }
 main();
+
 
 /*
 // Implement the readRFID method
