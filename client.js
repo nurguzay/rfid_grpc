@@ -7,7 +7,6 @@ const config = require("./config.json");
 var packageDefinition = protoLoader.loadSync(
     PROTO_PATH,
     {
-      // Perhaps this should be false?
       keepCase: true,
       longs: String,
       enums: String,
